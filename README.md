@@ -4,6 +4,10 @@
 
 > _This codebase is a work-in-progress. The repo is here as a placeholder for anyone interested in contributing to the software development kit. Pull-requests and contributions are welcome!_
 
+## Requirements
+
+- Python 3.7+
+
 ## Installation
 
 Simply install the package from the root directory with:
@@ -42,3 +46,20 @@ client.get_file(1)
 item = {name: "Directus", id: 1}
 client.create_item("collection_name", item)
 ```
+
+## Development
+
+Simply install the project from scratch with the following command:
+
+```sh
+make install
+```
+
+You can lint or format the code using the following commands:
+
+```sh
+make lint
+make format
+```
+
+For more details, please see the `Makefile` file.
