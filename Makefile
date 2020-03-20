@@ -9,6 +9,7 @@ VENV := venv
 
 BLACK := python3 -m black --exclude ${VENV}
 PYLINT := python3 -m pylint
+PYTEST := python3 -m pytest -v
 
 clean:
 	@rm -rf -- ${VENV}
@@ -30,5 +31,9 @@ lint: venv
 	${PYLINT} directus_api
 
 format: venv
-	@source venv/bin/activate
+	@source ${VENV}/bin/activate
 	${BLACK} .
+
+test: venv
+	@source ${VENV}/bin/activate
+	${PYTEST}

@@ -14,5 +14,21 @@ jobs:
         with:
           python-version: 3.x
 
-      - run: make install
       - run: make lint
+
+  test:
+    name: Test (python${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - run: make test
