@@ -15,7 +15,7 @@ clean:
 	@rm -rf -- ${VENV}
 
 venv:
-	@test -f ${VENV}/bin/activate || python -m venv ${VENV}
+	@test -f ${VENV}/bin/activate || python3 -m venv ${VENV}
 	@source ${VENV}/bin/activate
 	@pip -q install wheel
 	@pip -q install -r requirements-dev.txt
