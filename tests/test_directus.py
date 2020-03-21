@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from json import loads, dumps
 
 from pytest import raises

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from json.decoder import JSONDecodeError
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urljoin
