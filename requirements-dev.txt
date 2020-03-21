@@ -1,4 +1,5 @@
 black
+mypy
 pyjwt
 pylint
 pytest

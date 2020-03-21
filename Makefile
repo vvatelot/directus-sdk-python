@@ -12,6 +12,7 @@ PACKAGE := directus
 
 BLACK := python -m black --exclude ${VENV}
 PYLINT := python -m pylint
+MYPY := python -m mypy
 PYTEST := python -m pytest -v
 
 clean:
@@ -32,6 +33,8 @@ lint: venv
 	${BLACK} --check .
 	@echo -e "\nChecking python lint\n"
 	${PYLINT} ${PACKAGE}
+	@echo -e "\nChecking python typing\n"
+	${MYPY} ${PACKAGE}
 
 format: venv
 	@source ${VENV}/bin/activate
