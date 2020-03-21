@@ -6,8 +6,8 @@ from pytest import raises
 from responses import POST, add_callback
 from responses import activate as activate_responses
 
-from directus_api.directus import DirectusClient
-from directus_api.exceptions import DirectusException
+from directus.directus import DirectusClient
+from directus.exceptions import DirectusException
 
 
 class TestAuthentication:

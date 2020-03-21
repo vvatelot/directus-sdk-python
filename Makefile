@@ -7,6 +7,8 @@
 SHELL := bash
 VENV := venv
 
+PACKAGE := directus
+
 BLACK := python -m black --exclude ${VENV}
 PYLINT := python -m pylint
 PYTEST := python -m pytest -v
@@ -28,7 +30,7 @@ lint: venv
 	@echo -e "\nChecking python black\n"
 	${BLACK} --check .
 	@echo -e "\nChecking python lint\n"
-	${PYLINT} directus_api
+	${PYLINT} ${PACKAGE}
 
 format: venv
 	@source ${VENV}/bin/activate

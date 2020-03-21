@@ -21,7 +21,7 @@ pip install .
 ### Init client and authentication
 
 ```python
-from directus_api import DirectusClient
+from directus import DirectusClient
 
 # Creates a Directus anonymous client object
 client = DirectusClient(url="http://localhost:8080", project="directus")
@@ -54,7 +54,7 @@ collection, metadata = client.get_collection(collection="sports")
 
 ```python
 # First create your Collection object
-from directus_api.models import Collection
+from directus.models import Collection
 
 new_collection = Collection(**{
     "collection": "sports",
