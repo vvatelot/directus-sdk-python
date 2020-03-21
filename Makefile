@@ -2,9 +2,10 @@
 
 # Run all commands in a single shell
 # See https://www.gnu.org/software/make/manual/html_node/One-Shell.html
+SHELL := bash
+.SHELLFLAGS := -ec
 .ONESHELL:
 
-SHELL := bash
 VENV := venv
 
 PACKAGE := directus
