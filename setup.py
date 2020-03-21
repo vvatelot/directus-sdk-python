@@ -10,4 +10,5 @@ setup(
     license="MIT",
     packages=["directus_api"],
     zip_safe=False,
+    install_requires=["requests", "pyjwt"],
 )

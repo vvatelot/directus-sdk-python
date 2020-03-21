@@ -1,3 +1,6 @@
 black
+pyjwt
 pylint
 pytest
+requests
+responses
