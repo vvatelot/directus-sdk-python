@@ -1,24 +1,31 @@
 # -*- coding: utf-8 -*-
 
 from json.decoder import JSONDecodeError
-from typing import List, Optional, Tuple, Union
-from urllib.parse import urljoin
-from jwt import decode
 from time import time
+from typing import Optional, Tuple
+from urllib.parse import urljoin
+from http import HTTPStatus
 
-from requests import Response, request
+from jwt import decode
+from requests import request
 
 from ..exceptions import DirectusException
 from ..typing import (
-    ResponseMeta,
-    RequestMeta,
-    RequestHeaders,
     RequestData,
+    RequestHeaders,
+    RequestMeta,
     RequestParams,
+    ResponseMeta,
 )
 
 
-class ApiClient(object):
+class ApiClient:  # pylint: disable=too-few-public-methods
+    """
+    This class make the connection to the Directus API. It implements
+    existing REST methods described in the documentation:
+    https://docs.directus.io/api/reference.html
+    """
+
     def __init__(
         self,
         url: str,
@@ -26,136 +33,107 @@ class ApiClient(object):
         email: Optional[str] = None,
         password: Optional[str] = None,
     ):
-        self.baseHeader = {}
+        self.base_header = {}
         self.token = ""
         self.url = url
-        self.baseUrl = urljoin(url, project)
+        self.base_url = urljoin(base=url, url=project)
         self.project = project
         if email and password:
-            auth, _ = self.do_post(
-                path="auth/authenticate", data={"email": email, "password": password}
+            auth, _ = self.make_request(
+                method="POST",
+                path="auth/authenticate",
+                data={"email": email, "password": password},
             )
             self.token = auth["token"]
-            self.baseHeader["authorization"] = f"Bearer {self.token}"
+            self.base_header["authorization"] = f"Bearer {self.token}"
 
-    def do_get(
-        self,
-        path: str,
-        params: RequestParams = {},
-        headers: RequestHeaders = {},
-        meta: RequestMeta = [],
-    ) -> Tuple[dict, ResponseMeta]:
-        headers = {**self.baseHeader, **headers}
-        params["meta"] = ",".join(meta)
-        response = self._make_request(
-            "GET", "/".join([self.baseUrl, path]), headers=headers, params=params
-        )
-
-        if not response:
-            return ({}, {})
-
-        result = response.json()
-
-        return (
-            [result["data"]]
-            if params.get("single") and params["single"]
-            else result["data"],
-            result["meta"] if result.get("meta") else {},
-        )
-
-    def do_post(
-        self,
-        path: str,
-        data: RequestData,
-        headers: RequestHeaders = {},
-        meta: RequestMeta = [],
-    ) -> Tuple[dict, ResponseMeta]:
-        headers = {**self.baseHeader, **headers}
-        params = {"meta": ",".join(meta)}
-        response = self._make_request(
-            "POST",
-            "/".join([self.baseUrl, path]),
-            headers=headers,
-            data=data,
-            params=params,
-        )
-
-        if not response:
-            return ({}, {})
-
-        result = response.json()
-
-        return result["data"], result["meta"] if result.get("meta") else {}
-
-    def do_patch(
-        self,
-        path: str,
-        id: Union[str, int],
-        data: RequestData = {},
-        params: RequestParams = {},
-        headers: RequestHeaders = {},
-        meta: RequestMeta = [],
-    ) -> Tuple[dict, ResponseMeta]:
-        headers = {**self.baseHeader, **headers}
-        params["meta"] = ",".join(meta)
-        url = "/".join([self.baseUrl, path, str(id)])
-
-        response = self._make_request(
-            "PATCH", url, headers=headers, data=data, params=params
-        )
-
-        if not response:
-            return ({}, {})
-
-        result = response.json()
-
-        return result["data"], result["meta"] if result.get("meta") else {}
-
-    def do_delete(
-        self, path: str, id: Union[int, str], headers: RequestHeaders = {}
-    ) -> bool:
-        headers = {**self.baseHeader, **headers}
-        url = "/".join([self.baseUrl, path, str(id)])
-        response = self._make_request("DELETE", url, headers=headers)
-
-        if not response:
-            return False
-
-        if response.status_code != 204:
-            return False
-
-        return True
-
-    def _make_request(
+    def make_request(
         self,
         method: str,
-        url: str,
-        headers: RequestHeaders,
-        data: RequestData = {},
-        params: RequestParams = {},
-    ) -> Optional[Response]:
-        self._auto_refresh_token()
+        path: str,
+        data: Optional[RequestData] = None,
+        params: Optional[RequestParams] = None,
+        headers: Optional[RequestHeaders] = None,
+        meta: Optional[RequestMeta] = None,
+    ) -> Tuple[dict, ResponseMeta]:
+        "Generic REST request method"
+
+        if method not in ["GET", "POST", "PATCH", "DELETE"]:
+            raise DirectusException(
+                f"Method {method} not allowed. Only metods GET, POST, PATCH and DELETE"
+            )
+
+        self.auto_refresh_token()
+
         response = request(
-            method=method, url=url, headers=headers, json=data, params=params
+            method=method,
+            url=self.set_url(path=path),
+            headers=self.set_headers(headers=headers),
+            json=data,
+            params=self.set_params(params=params, meta=meta),
         )
 
         try:
             if response.json().get("error"):
                 raise DirectusException(
-                    f"{response.json()['error']['message']} ( Code {response.json()['error']['code']}: Please have a look at https://docs.directus.io/api/errors.html )"
+                    (
+                        f"{response.json()['error']['message']}"
+                        f"( Code {response.json()['error']['code']}: "
+                        f"Please have a look at https://docs.directus.io/api/errors.html )"
+                    )
                 )
+
+            result = response.json()
+
+            if method in ["GET", "POST", "PATCH"]:
+                return result["data"], result.get("meta") or {}
+
+            if method == "DELETE":
+                if not response:
+                    raise DirectusException("DELETE Operation went wrong")
+
+                if response.status_code != HTTPStatus.NO_CONTENT:
+                    raise DirectusException(
+                        "DELETE Operation went wrong. "
+                        f"Response status code is: {response.status_code}"
+                    )
+
+                return {}, {}
+
         except JSONDecodeError:
-            return None
+            return {}, {}
 
-        return response
+        return {}, {}
 
-    def _auto_refresh_token(self) -> None:
+    def auto_refresh_token(self) -> None:
+        "Call refresh token API to update JWT token"
         if self.token:
             decoded_token = decode(self.token, verify=False)
 
         if self.token and int(decoded_token["exp"] - 60) < int(time()):
-            new_token, _ = self.do_post(
-                "/".join(["auth", "refresh"]), data={"token": self.token}
+            new_token, _ = self.make_request(
+                method="POST",
+                path="/".join(["auth", "refresh"]),
+                data={"token": self.token},
             )
             self.token = new_token["token"]
-            self.baseHeader["token"] = new_token["token"]
+            self.base_header["token"] = new_token["token"]
+
+    @staticmethod
+    def set_params(
+        params: Optional[RequestParams], meta: Optional[RequestMeta]
+    ) -> RequestParams:
+        "Generate request params"
+        params = params or {}
+        if meta:
+            params["meta"] = ",".join(meta)
+
+        return params
+
+    def set_headers(self, headers: Optional[RequestHeaders]) -> RequestHeaders:
+        "Generate request headers"
+        return {**self.base_header, **headers} if headers else self.base_header
+
+    def set_url(self, path: str) -> str:
+        "Generate url based on base url and path"
+        return "/".join([self.base_url, path])

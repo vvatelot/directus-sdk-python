@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import asdict
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 from .exceptions import DirectusException
 from .utils import ApiClient
@@ -56,7 +55,7 @@ class DirectusClient:
         if not password and email:
             raise DirectusException("You must provide a password")
 
-        self.ApiClient = ApiClient(
+        self.api_client = ApiClient(
             url=url, email=email, password=password, project=project
         )
 
@@ -68,7 +67,7 @@ class DirectusClient:
     """
 
     def get_collections_list(
-        self, offset: int = 0, single: bool = False, meta: RequestMeta = []
+        self, offset: int = 0, single: bool = False, meta: Optional[RequestMeta] = None
     ) -> Tuple[List[Collection], ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/collections.html#list-collections
@@ -77,17 +76,18 @@ class DirectusClient:
         -------
             (List of Collection, Metadata)
         """
-        path = "collections"
 
-        params = {"offset": offset, "single": int(single)}
-        response_data, response_meta = self.ApiClient.do_get(
-            path=path, params=params, meta=meta
+        response_data, response_meta = self.api_client.make_request(
+            method="GET",
+            path="collections",
+            params={"offset": offset, "single": int(single)},
+            meta=meta or [],
         )
 
         return list(response_data), response_meta
 
     def get_collection(
-        self, collection: str, meta: RequestMeta = []
+        self, collection: str, meta: Optional[RequestMeta] = None
     ) -> Tuple[Collection, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/collections.html#retrieve-a-collection
@@ -96,12 +96,13 @@ class DirectusClient:
         -------
             (Collection, Metadata)
         """
-        path = "/".join(["collections", collection])
 
-        return self.ApiClient.do_get(path=path, meta=meta)
+        return self.api_client.make_request(
+            method="GET", path="/".join(["collections", collection]), meta=meta or [],
+        )
 
     def create_collection(
-        self, collection: Collection, meta: RequestMeta = []
+        self, collection: Collection, meta: Optional[RequestMeta] = None
     ) -> Tuple[Collection, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/collections.html#create-a-collection
@@ -110,12 +111,13 @@ class DirectusClient:
         -------
             (Collection, Metadata)
         """
-        path = "collections"
 
-        return self.ApiClient.do_post(path=path, data=asdict(collection), meta=meta)
+        return self.api_client.make_request(
+            method="POST", path="collections", data=collection, meta=meta or [],
+        )
 
     def update_collection(
-        self, collection: str, data: dict, meta: RequestMeta = []
+        self, collection: str, data: dict, meta: Optional[RequestMeta] = None
     ) -> Tuple[Collection, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/collections.html#update-a-collection
@@ -124,15 +126,15 @@ class DirectusClient:
         -------
             (Collection, Metadata)
         """
-        path = "collections"
 
-        response_data, response_meta = self.ApiClient.do_patch(
-            path=path, id=collection, data=data, meta=meta
+        return self.api_client.make_request(
+            method="PATCH",
+            path=f"collections/{collection}",
+            data=data,
+            meta=meta or [],
         )
 
-        return response_data, response_meta
-
-    def delete_collection(self, collection: str) -> bool:
+    def delete_collection(self, collection: str) -> Tuple[Collection, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/collections.html#delete-a-collection
 
@@ -140,11 +142,9 @@ class DirectusClient:
         -------
             bool (True if deleted, False if not)
         """
-        path = "collections"
+        path = f"collections/{collection}"
 
-        is_deleted = self.ApiClient.do_delete(path=path, id=collection)
-
-        return is_deleted
+        return self.api_client.make_request(method="DELETE", path=path)
 
     """
 
@@ -156,16 +156,16 @@ class DirectusClient:
     def get_items_list(
         self,
         collection: str,
-        fields: RequestFields = ["*"],
+        fields: Optional[RequestFields] = None,
         page: Optional[int] = None,
         limit: int = 100,
         offset: int = 0,
-        sort: List[str] = ["id"],
+        sort: Optional[List[str]] = None,
         single: bool = False,
-        filter: dict = {},
+        item_filter: Optional[dict] = None,
         status: Optional[str] = None,
-        q: Optional[str] = None,
-        meta: RequestMeta = [],
+        query: Optional[str] = None,
+        meta: Optional[RequestMeta] = None,
     ) -> Tuple[List[Item], ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#list-the-items
@@ -178,25 +178,27 @@ class DirectusClient:
         -------
             (List of Item, Metadata)
         """
-        path = "/".join(["items", collection])
 
         params = {
-            "fields": ",".join(fields),
+            "fields": ",".join(fields or ["*"]),
             "limit": limit,
             "offset": offset,
-            "sort": ",".join(sort),
+            "sort": ",".join(sort or ["id"]),
             "single": single,
-            "filter": filter,
+            "filter": item_filter,
             "status": status,
-            "q": q,
+            "q": query,
         }
 
         if page:
             params["page"] = page
             del params["offset"]
 
-        response_data, response_meta = self.ApiClient.do_get(
-            path, params=params, meta=meta
+        response_data, response_meta = self.api_client.make_request(
+            method="GET",
+            path="/".join(["items", collection]),
+            params=params,
+            meta=meta or [],
         )
 
         return list(response_data), response_meta
@@ -204,12 +206,12 @@ class DirectusClient:
     def get_all_items_list(
         self,
         collection: str,
-        fields: RequestFields = ["*"],
-        sort: List[str] = ["id"],
-        filter: dict = {},
+        fields: Optional[RequestFields] = None,
+        sort: Optional[List[str]] = None,
+        item_filter: Optional[dict] = None,
         status: Optional[str] = None,
-        q: Optional[str] = None,
-        meta: RequestMeta = [],
+        query: Optional[str] = None,
+        meta: Optional[RequestMeta] = None,
         page: int = 1,
     ) -> Tuple[List[Item], ResponseMeta]:
         """
@@ -219,19 +221,18 @@ class DirectusClient:
         -------
             (List of Item, Metadata)
         """
-        path = "/".join(["items", collection])
-
+        meta = meta if meta else []
         if "page" not in meta:
             meta.append("page")
 
         response_data, response_meta = self.get_items_list(
             collection=collection,
-            fields=fields,
-            sort=sort,
-            filter=filter,
+            fields=fields or ["*"],
+            sort=sort or ["id"],
+            item_filter=item_filter or {},
             page=page,
             status=status,
-            q=q,
+            query=query,
             meta=meta,
         )
 
@@ -242,9 +243,9 @@ class DirectusClient:
                 fields=fields,
                 page=next_page,
                 sort=sort,
-                filter=filter,
+                item_filter=item_filter,
                 status=status,
-                q=q,
+                query=query,
                 meta=meta,
             )
 
@@ -255,9 +256,9 @@ class DirectusClient:
     def get_item(
         self,
         collection: str,
-        id: int,
-        fields: RequestFields = ["*"],
-        meta: RequestMeta = [],
+        item_id: int,
+        fields: Optional[RequestFields] = None,
+        meta: Optional[RequestMeta] = None,
     ) -> Tuple[Item, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#retrieve-an-item
@@ -266,14 +267,16 @@ class DirectusClient:
         -------
             (Item, Metadata)
         """
-        path = "/".join(["items", collection, str(id)])
 
-        params = {"fields": ",".join(fields)}
-
-        return self.ApiClient.do_get(path=path, params=params, meta=meta)
+        return self.api_client.make_request(
+            method="GET",
+            path="/".join(["items", collection, str(item_id)]),
+            params={"fields": ",".join(fields or ["*"])},
+            meta=meta or [],
+        )
 
     def create_item(
-        self, collection: str, item: Item, meta: RequestMeta = []
+        self, collection: str, item_data: Item, meta: Optional[RequestMeta] = None
     ) -> Tuple[Item, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#create-an-item
@@ -282,17 +285,21 @@ class DirectusClient:
         -------
             (Item, Metadata)
         """
-        path = "/".join(["items", collection])
 
-        return self.ApiClient.do_post(path=path, data=item, meta=meta)
+        return self.api_client.make_request(
+            method="POST",
+            path="/".join(["items", collection]),
+            data=item_data,
+            meta=meta or [],
+        )
 
     def update_item(
         self,
         collection: str,
-        id: int,
-        data: dict,
-        fields: RequestFields = ["*"],
-        meta: RequestMeta = [],
+        item_id: int,
+        item_data: dict,
+        fields: Optional[RequestFields] = None,
+        meta: Optional[RequestMeta] = None,
     ) -> Tuple[Item, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#update-an-item
@@ -301,11 +308,16 @@ class DirectusClient:
         -------
             (Item, Metadata)
         """
-        path = "/".join(["items", collection])
 
-        return self.ApiClient.do_patch(path=path, id=id, data=data, meta=meta)
+        return self.api_client.make_request(
+            method="PATCH",
+            path="/".join(["items", collection, str(item_id)]),
+            data=item_data,
+            params={"fields": fields or ["*"]},
+            meta=meta or [],
+        )
 
-    def delete_item(self, collection: str, id: int) -> bool:
+    def delete_item(self, collection: str, item_id: int) -> Tuple[dict, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#delete-an-item
 
@@ -313,23 +325,24 @@ class DirectusClient:
         -------
             bool (True if deleted, False if not)
         """
-        path = "/".join(["items", collection])
 
-        return self.ApiClient.do_delete(path=path, id=id)
+        return self.api_client.make_request(
+            method="DELETE", path="/".join(["items", collection, str(item_id)])
+        )
 
     def get_item_revisions_list(
         self,
         collection: str,
-        id: int,
-        fields: RequestFields = ["*"],
+        item_id: int,
+        fields: Optional[RequestFields] = None,
         limit: int = 100,
         offset: int = 0,
         page: Optional[int] = None,
-        sort: List[str] = ["id"],
+        sort: Optional[List[str]] = None,
         single: bool = False,
-        filter: dict = {},
-        q: Optional[str] = None,
-        meta: RequestMeta = [],
+        item_filter: Optional[dict] = None,
+        query: Optional[str] = None,
+        meta: Optional[RequestMeta] = None,
     ) -> Tuple[List[Revision], ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#list-item-revisions
@@ -342,24 +355,26 @@ class DirectusClient:
         -------
             (List of revision, Metadata)
         """
-        path = "/".join(["items", collection, str(id), "revisions"])
 
         params = {
-            "fields": ",".join(fields),
+            "fields": ",".join(fields or ["*"]),
             "limit": limit,
             "offset": offset,
-            "sort": ",".join(sort),
+            "sort": ",".join(sort or ["id"]),
             "single": single,
-            "filter": filter,
-            "q": q,
+            "filter": item_filter or {},
+            "q": query,
         }
 
         if page:
             params["page"] = page
             del params["offset"]
 
-        response_data, response_meta = self.ApiClient.do_get(
-            path, params=params, meta=meta
+        response_data, response_meta = self.api_client.make_request(
+            method="GET",
+            path="/".join(["items", collection, str(item_id), "revisions"]),
+            params=params,
+            meta=meta or [],
         )
 
         return list(response_data), response_meta
@@ -367,10 +382,10 @@ class DirectusClient:
     def get_item_revision(
         self,
         collection: str,
-        id: int,
+        item_id: int,
         offset: int,
-        fields: RequestFields = ["*"],
-        meta: RequestMeta = [],
+        fields: Optional[RequestFields] = None,
+        meta: Optional[RequestMeta] = None,
     ) -> Tuple[Revision, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#retrieve-an-item-revision
@@ -379,19 +394,23 @@ class DirectusClient:
         -------
             (revision, Metadata)
         """
-        path = "/".join(["items", collection, str(id), "revisions", str(offset)])
 
-        params = {"fields": ",".join(fields)}
-
-        return self.ApiClient.do_get(path, params=params, meta=meta)
+        return self.api_client.make_request(
+            method="GET",
+            path="/".join(
+                ["items", collection, str(item_id), "revisions", str(offset)]
+            ),
+            params={"fields": ",".join(fields or ["*"])},
+            meta=meta or [],
+        )
 
     def revert_item_revision(
         self,
         collection: str,
-        id: int,
-        revision: int,
-        fields: RequestFields = ["*"],
-        meta: RequestMeta = [],
+        item_id: int,
+        revision_id: int,
+        fields: Optional[RequestFields] = None,
+        meta: Optional[RequestMeta] = None,
     ) -> Tuple[Revision, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#revert-to-a-given-revision
@@ -400,11 +419,15 @@ class DirectusClient:
         -------
             (Item, Metadata)
         """
-        path = "/".join(["items", collection, str(id), "revert"])
 
-        params = {"fields": ",".join(fields)}
-
-        return self.ApiClient.do_patch(path=path, id=revision, params=params, meta=meta)
+        return self.api_client.make_request(
+            method="PATCH",
+            path="/".join(
+                ["items", collection, str(item_id), "revert", str(revision_id)]
+            ),
+            params={"fields": ",".join(fields or ["*"])},
+            meta=meta or [],
+        )
 
     """
 
@@ -415,15 +438,15 @@ class DirectusClient:
 
     def get_files_list(
         self,
-        fields: RequestFields = ["*"],
+        fields: Optional[RequestFields] = None,
         limit: int = 100,
         offset: int = 0,
-        sort: List[str] = ["id"],
+        sort: Optional[List[str]] = None,
         single: bool = False,
-        filter: dict = {},
+        file_filter: Optional[dict] = None,
         status: Optional[str] = None,
-        q: Optional[str] = None,
-        meta: RequestMeta = [],
+        query: Optional[str] = None,
+        meta: Optional[RequestMeta] = None,
     ) -> Tuple[List[File], ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/files.html#list-the-files
@@ -434,27 +457,30 @@ class DirectusClient:
         -------
             (List of File, Metadata)
         """
-        path = "files"
 
-        params = {
-            "fields": ",".join(fields),
-            "limit": limit,
-            "offset": offset,
-            "sort": ",".join(sort),
-            "single": single,
-            "filter": filter,
-            "status": status,
-            "q": q,
-        }
-
-        response_data, response_meta = self.ApiClient.do_get(
-            path, params=params, meta=meta
+        response_data, response_meta = self.api_client.make_request(
+            method="GET",
+            path="files",
+            params={
+                "fields": ",".join(fields or ["*"]),
+                "limit": limit,
+                "offset": offset,
+                "sort": ",".join(sort or ["id"]),
+                "single": single,
+                "filter": file_filter or {},
+                "status": status,
+                "q": query,
+            },
+            meta=meta or [],
         )
 
         return list(response_data), response_meta
 
     def get_file(
-        self, id: int, fields: RequestFields = ["*"], meta: RequestMeta = []
+        self,
+        file_id: int,
+        fields: Optional[RequestFields] = None,
+        meta: Optional[RequestMeta] = None,
     ) -> Tuple[File, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/files.html#retrieve-a-file
@@ -463,11 +489,13 @@ class DirectusClient:
         -------
             (File, Metadata)
         """
-        path = "/".join(["files", str(id)])
 
-        params = {"fields": ",".join(fields)}
-
-        return self.ApiClient.do_get(path=path, params=params, meta=meta)
+        return self.api_client.make_request(
+            method="GET",
+            path="/".join(["files", str(file_id)]),
+            params={"fields": ",".join(fields or ["*"])},
+            meta=meta or [],
+        )
 
     def create_file(
         self,
@@ -478,7 +506,7 @@ class DirectusClient:
         location: Optional[str] = None,
         tags: Optional[str] = None,
         metadata: Optional[str] = None,
-        meta: RequestMeta = [],
+        meta: Optional[RequestMeta] = None,
     ) -> Tuple[File, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/files.html#create-a-file
@@ -487,7 +515,6 @@ class DirectusClient:
         -------
             (File, Metadata)
         """
-        path = "files"
 
         params = {"data": data}
 
@@ -504,7 +531,9 @@ class DirectusClient:
         if metadata:
             params["metadata"] = metadata
 
-        return self.ApiClient.do_post(path=path, data=params, meta=meta)
+        return self.api_client.make_request(
+            method="POST", path="files", data=params, meta=meta or []
+        )
 
     """
 
@@ -518,8 +547,8 @@ class DirectusClient:
         send_to: List[str],
         subject: str,
         body: str,
-        type: Optional[str] = "txt",
-        data: Optional[dict] = {},
+        body_type: Optional[str] = "txt",
+        data: Optional[dict] = None,
     ) -> Tuple[dict, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/mail.html#send-an-email
@@ -528,12 +557,15 @@ class DirectusClient:
         -------
             (Empty body, Metadata)
         """
-        path = "mail"
-        params = {
-            "to": send_to,
-            "subject": subject,
-            "body": body,
-            "type": type,
-            "data": data,
-        }
-        return self.ApiClient.do_post(path=path, data=params)
+
+        return self.api_client.make_request(
+            method="POST",
+            path="mail",
+            data={
+                "to": send_to,
+                "subject": subject,
+                "body": body,
+                "type": body_type,
+                "data": data or {},
+            },
+        )

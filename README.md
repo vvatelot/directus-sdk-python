@@ -94,7 +94,7 @@ collection_is_deleted = client.delete_collection(collection="sports")
 
 #### Get a list of items in a collection
 
-> **Params:** collection (required str), fields (List of str), page (int), limit (int), offset (int), sort (List of str), single (bool), status (str), q (str), meta (List of str)
+> **Params:** collection (required str), fields (List of str), page (int), limit (int), offset (int), sort (List of str), single (bool), item_filter (dict), status (str), query (str), meta (List of str)
 >
 > By default, if a page is specified, offset will be ignored
 
@@ -104,7 +104,7 @@ sports, metadata = client.get_items_list(collection="sports")
 
 #### Get a list of all items in a collection (run through pagination)
 
-> **Params:** collection (required str), fields (List of str), sort (List of str), status (str), q (str), meta (List of str)
+> **Params:** collection (required str), fields (List of str), sort (List of str), item_filter (dict), status (str), query (str), meta (List of str)
 
 ```python
 all_sports, metadata = client.get_all_items_list(collection="sports")
@@ -112,67 +112,67 @@ all_sports, metadata = client.get_all_items_list(collection="sports")
 
 #### Get a specific item in a collection by id
 
-> **Params:** collection (required str), id (required int), fields (List of str), meta (List of str)
+> **Params:** collection (required str), item_id (required int), fields (List of str), meta (List of str)
 
 ```python
-sport, metadata = client.get_item(collection="sports", id=1)
+sport, metadata = client.get_item(collection="sports", item_id=1)
 ```
 
 #### Create an item (with corresponding data model)
 
-> **Params:** collection (required str), item (required dict), meta (List of str)
+> **Params:** collection (required str), item_data (required dict), meta (List of str)
 
 ```python
-created_sport, metadata = client.create_item(collection="sports", item=item_data)
+created_sport, metadata = client.create_item(collection="sports", item_data=item_data)
 ```
 
 #### Update an item
 
-> **Params:** collection (required str), id (required int), data (required dict), fields (List of str), meta (List of str)
+> **Params:** collection (required str), item_id (required int), item_data (required dict), fields (List of str), meta (List of str)
 
 ```python
-updated_sport, metadata = client.update_item(collection="sports", id=1, data=item_data_to_update)
+updated_sport, metadata = client.update_item(collection="sports", item_id=1, item_data=item_data_to_update)
 ```
 
 #### Delete an item
 
-> **Params:** collection (required str), id (required int)
+> **Params:** collection (required str), item_id (required int)
 
 ```python
-sport_deleted = client.delete_item(collection="sports", id=1)
+sport_deleted = client.delete_item(collection="sports", item_id=1)
 ```
 
 #### List item revisions
 
-> **Params:** collection (required str), id (required int), fields (List of str), limit (int), offset (int), page (int), sort (List of str), single (bool), filter (dict), q (str), meta (List of str)
+> **Params:** collection (required str), item_id (required int), fields (List of str), limit (int), offset (int), page (int), sort (List of str), single (bool), item_filter (dict), query (str), meta (List of str)
 >
 > By default, if a page is specified, offset will be ignored
 
 ```python
-sport_revisions = client.get_item_revisions_list(collection="sports", id=1)
+sport_revisions = client.get_item_revisions_list(collection="sports", item_id=1)
 ```
 
 #### Retrieve an item revision
 
-> **Params:** collection (required str), id (required int), offset (required int), fields (List of str), meta (List of str)
+> **Params:** collection (required str), item_id (required int), offset (required int), fields (List of str), meta (List of str)
 
 ```python
-sport_revision = client.get_item_revision(collection="sports", id=1, offset= 2)
+sport_revision = client.get_item_revision(collection="sports", item_id=1, offset= 2)
 ```
 
 #### Revert to a given revision
 
-> **Params:** collection (required str), id (required int), revision (int), fields (List of str), meta (List of str)
+> **Params:** collection (required str), item_id (required int), revision_id (int), fields (List of str), meta (List of str)
 
 ```python
-reverted_sport = client.revert_item_revision(collection="sports", id=1, revision=2)
+reverted_sport = client.revert_item_revision(collection="sports", item_id=1, revision_id=2)
 ```
 
 ### Files
 
 #### Get a list of files
 
-> **Params:** fields (List of str), page (int), limit (int), offset (int), sort (List of str), filter (dict), single (bool), status (str), q (str), meta (List of str)
+> **Params:** fields (List of str), page (int), limit (int), offset (int), sort (List of str), file_filter (dict), single (bool), status (str), query (str), meta (List of str)
 
 ```python
 files, metadata = client.get_files_list()
@@ -180,10 +180,10 @@ files, metadata = client.get_files_list()
 
 #### Get a specific file by id
 
-> **Params:** id (required int), fields (List of str), meta (List of str)
+> **Params:** file_id (required int), fields (List of str), meta (List of str)
 
 ```python
-file, metadata = client.get_file(id=1)
+file, metadata = client.get_file(file_id=1)
 ```
 
 #### Create a file
@@ -198,7 +198,7 @@ file, metadata = client.create_file(data="https://picsum.photos/200/300")
 
 #### Send an email
 
-> **Params:** send_to (required str), subject (required str), body (required str), type (str), data (dict)
+> **Params:** send_to (required str), subject (required str), body (required str), body_type (str), data (dict)
 
 ```python
 client.send_email(send_to="sendto@example.com", subject="Hello world!", body="This is my message to you")

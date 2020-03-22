@@ -11,24 +11,39 @@ from directus.exceptions import DirectusException
 
 
 class TestAuthentication:
-    def test_authentication_no_server(self):
-        with raises(DirectusException):
-            client = DirectusClient()
+    """
+    Authentication tests suite for the Directus SDK.
+    """
 
-    def test_authentication_no_project(self):
+    @staticmethod
+    def test_authentication_no_server():
+        "Test trying to connect providing no server url"
         with raises(DirectusException):
-            client = DirectusClient(url="http://test.local")
+            DirectusClient()
 
-    def test_authentication_no_login(self):
+    @staticmethod
+    def test_authentication_no_project():
+        "Test trying to connect to server without credentials"
+        with raises(DirectusException):
+            DirectusClient(url="http://test.local")
+
+    @staticmethod
+    def test_authentication_no_login():
+        "Test trying to connect to server without email"
         with raises(DirectusException):
             DirectusClient(url="http://test.local", password="password")
 
-    def test_authentication_no_password(self):
+    @staticmethod
+    def test_authentication_no_password():
+        "Test trying to connect to server without password"
         with raises(DirectusException):
             DirectusClient(url="http://test.local", email="email@example.com")
 
+    @staticmethod
     @activate_responses
-    def test_authentication_with_server_and_credentials(self):
+    def test_authentication_with_server_and_credentials():
+        "Test trying to connect to server with server and credentials"
+
         def request_callback(request):
             payload = loads(request.body)
             if (
@@ -45,7 +60,12 @@ class TestAuthentication:
 
             response_json = {
                 "data": {
-                    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZXhwIjoxNTgxMjgwODg4LCJ0eXBlIjoiYXV0aCIsImtleSI6InRvdG8iLCJwcm9qZWN0IjoiXyJ9.3FVk8UQPwdPewBVQeovncAemeWCa7zgm4PXfpjWd6qI",
+                    "token": (
+                        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."
+                        "eyJpZCI6MSwiZXhwIjoxNTgxMjgwODg4LCJ0eXBlIjoiYX"
+                        "V0aCIsImtleSI6InRvdG8iLCJwcm9qZWN0IjoiXyJ9."
+                        "3FVk8UQPwdPewBVQeovncAemeWCa7zgm4PXfpjWd6qI"
+                    ),
                     "user": {"first_name": "Admin", "id": "1", "last_name": "User",},
                 },
                 "public": True,
@@ -61,7 +81,7 @@ class TestAuthentication:
         )
 
         with raises(DirectusException):
-            client_ko = DirectusClient(
+            DirectusClient(
                 url="http://test.local",
                 email="wrong.email@example.com",
                 password="password",
@@ -74,7 +94,9 @@ class TestAuthentication:
             password="password",
             project="_",
         )
-        assert (
-            client_ok.ApiClient.token
-            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZXhwIjoxNTgxMjgwODg4LCJ0eXBlIjoiYXV0aCIsImtleSI6InRvdG8iLCJwcm9qZWN0IjoiXyJ9.3FVk8UQPwdPewBVQeovncAemeWCa7zgm4PXfpjWd6qI"
+        assert client_ok.api_client.token == (
+            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."
+            "eyJpZCI6MSwiZXhwIjoxNTgxMjgwODg4LCJ0eXBlIjoiYX"
+            "V0aCIsImtleSI6InRvdG8iLCJwcm9qZWN0IjoiXyJ9."
+            "3FVk8UQPwdPewBVQeovncAemeWCa7zgm4PXfpjWd6qI"
         )
