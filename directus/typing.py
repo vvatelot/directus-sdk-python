@@ -2,6 +2,7 @@
 
 from typing import Dict, List
 
+# pylint: disable=invalid-name
 
 RequestMeta = List[str]
 RequestFields = List[str]
