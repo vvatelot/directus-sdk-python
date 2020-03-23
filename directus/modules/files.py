@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple
 
 from ..typing import File, RequestFields, RequestMeta, ResponseMeta
 from ..utils import ApiClient
+from ..models import ListPagination, ListParameters
 
 
 class FilesMixin:
@@ -18,14 +19,8 @@ class FilesMixin:
 
     def get_files_list(
         self,
-        fields: Optional[RequestFields] = None,
-        limit: int = 100,
-        offset: int = 0,
-        sort: Optional[List[str]] = None,
-        single: bool = False,
-        file_filter: Optional[dict] = None,
-        status: Optional[str] = None,
-        query: Optional[str] = None,
+        parameters: Optional[ListParameters] = None,
+        pagination: Optional[ListPagination] = None,
         meta: Optional[RequestMeta] = None,
     ) -> Tuple[List[File], ResponseMeta]:
         """
@@ -42,14 +37,8 @@ class FilesMixin:
             method="GET",
             path="files",
             params={
-                "fields": ",".join(fields or ["*"]),
-                "limit": limit,
-                "offset": offset,
-                "sort": ",".join(sort or ["id"]),
-                "single": single,
-                "filter": file_filter or {},
-                "status": status,
-                "q": query,
+                **vars(pagination or ListPagination()),
+                **vars(parameters or ListParameters()),
             },
             meta=meta or [],
         )
