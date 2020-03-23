@@ -5,6 +5,7 @@ from typing import Optional
 from .exceptions import DirectusException
 from .modules import CollectionsMixin, FilesMixin, ItemsMixin
 from .utils import ApiClient
+from .models import ListPagination, ListParameters
 
 
 class DirectusClient(CollectionsMixin, ItemsMixin, FilesMixin):
@@ -50,3 +51,13 @@ class DirectusClient(CollectionsMixin, ItemsMixin, FilesMixin):
         self.api_client = ApiClient(
             url=url, email=email, password=password, project=project
         )
+
+    @staticmethod
+    def generate_parameters(
+        parameters: Optional[ListParameters], pagination: Optional[ListPagination]
+    ) -> dict:
+        "Generate requests parameters from directus parameters and pagination"
+        return {
+            **vars(pagination or ListPagination()),
+            **vars(parameters or ListParameters()),
+        }

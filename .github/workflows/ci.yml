@@ -3,18 +3,18 @@ name: CI
 on: push
 
 jobs:
-  # lint:
-  #   name: Lint
-  #   runs-on: ubuntu-latest
-  #
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #
-  #     - uses: actions/setup-python@v1
-  #       with:
-  #         python-version: 3.x
-  #
-  #     - run: make lint
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.x
+
+      - run: make lint
 
   test:
     name: Test (python${{ matrix.python-version }})

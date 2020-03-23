@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Callable
 
 from ..typing import Item, RequestMeta, ResponseMeta, Revision
 from ..utils import ApiClient
@@ -16,6 +16,7 @@ class ItemsMixin:
     """
 
     api_client: ApiClient
+    generate_parameters: Callable
     page_recursive_get_all: int = 0
 
     def get_items_list(
@@ -28,22 +29,16 @@ class ItemsMixin:
         """
         Find out more: https://docs.directus.io/api/items.html#list-the-items
 
-        If page is set, offset is not taken into account
-
-        If single, only return first corresponding result from list
-
         Returns
         -------
             (List of Item, Metadata)
         """
-
         response_data, response_meta = self.api_client.make_request(
             method="GET",
             path="/".join(["items", collection]),
-            params={
-                **vars(pagination or ListPagination()),
-                **vars(parameters or ListParameters()),
-            },
+            params=self.generate_parameters(
+                parameters=parameters, pagination=pagination
+            ),
             meta=meta or [],
         )
 
@@ -86,12 +81,12 @@ class ItemsMixin:
         self, collection: str, item_id: int, meta: Optional[RequestMeta] = None,
     ) -> Tuple[Item, ResponseMeta]:
         """
+        Find out more: https://docs.directus.io/api/items.html#retrieve-an-item
 
         Returns
         -------
             (Item, Metadata)
         """
-
         return self.api_client.make_request(
             method="GET",
             path="/".join(["items", collection, str(item_id)]),
@@ -108,7 +103,6 @@ class ItemsMixin:
         -------
             (Item, Metadata)
         """
-
         return self.api_client.make_request(
             method="POST",
             path="/".join(["items", collection]),
@@ -124,12 +118,12 @@ class ItemsMixin:
         meta: Optional[RequestMeta] = None,
     ) -> Tuple[Item, ResponseMeta]:
         """
+        Find out more: https://docs.directus.io/api/items.html#update-an-item
 
         Returns
         -------
             (Item, Metadata)
         """
-
         return self.api_client.make_request(
             method="PATCH",
             path="/".join(["items", collection, str(item_id)]),
@@ -137,6 +131,7 @@ class ItemsMixin:
             meta=meta or [],
         )
 
+    def delete_item(self, collection: str, item_id: int) -> Tuple[dict, ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#delete-an-item
 
@@ -144,7 +139,6 @@ class ItemsMixin:
         -------
             bool (True if deleted, False if not)
         """
-
         return self.api_client.make_request(
             method="DELETE", path="/".join(["items", collection, str(item_id)])
         )
@@ -153,42 +147,23 @@ class ItemsMixin:
         self,
         collection: str,
         item_id: int,
-        limit: int = 100,
-        offset: int = 0,
-        page: Optional[int] = None,
-        single: bool = False,
-        item_filter: Optional[dict] = None,
-        query: Optional[str] = None,
+        parameters: Optional[ListParameters] = None,
+        pagination: Optional[ListPagination] = None,
         meta: Optional[RequestMeta] = None,
     ) -> Tuple[List[Revision], ResponseMeta]:
         """
         Find out more: https://docs.directus.io/api/items.html#list-item-revisions
 
-        If page is set, offset is not taken into account
-
-        If single, only return first corresponding result from list
-
         Returns
         -------
             (List of revision, Metadata)
         """
-
-        params = {
-            "limit": limit,
-            "offset": offset,
-            "sort": ",".join(sort or ["id"]),
-            "filter": item_filter or {},
-            "q": query,
-        }
-
-        if page:
-            params["page"] = page
-            del params["offset"]
-
         response_data, response_meta = self.api_client.make_request(
             method="GET",
             path="/".join(["items", collection, str(item_id), "revisions"]),
-            params=params,
+            params=self.generate_parameters(
+                parameters=parameters, pagination=pagination
+            ),
             meta=meta or [],
         )
 
@@ -202,12 +177,12 @@ class ItemsMixin:
         meta: Optional[RequestMeta] = None,
     ) -> Tuple[Revision, ResponseMeta]:
         """
+        Find out more: https://docs.directus.io/api/items.html#retrieve-an-item-revision
 
         Returns
         -------
             (revision, Metadata)
         """
-
         return self.api_client.make_request(
             method="GET",
             path="/".join(
@@ -216,7 +191,7 @@ class ItemsMixin:
             meta=meta or [],
         )
 
-    def update_item(
+    def revert_item_revision(
         self,
         collection: str,
         item_id: int,
@@ -224,12 +199,12 @@ class ItemsMixin:
         meta: Optional[RequestMeta] = None,
     ) -> Tuple[Revision, ResponseMeta]:
         """
+        Find out more: https://docs.directus.io/api/items.html#revert-to-a-given-revision
 
         Returns
         -------
             (Item, Metadata)
         """
-
         return self.api_client.make_request(
             method="PATCH",
             path="/".join(

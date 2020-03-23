@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Callable
 
 from ..typing import File, RequestFields, RequestMeta, ResponseMeta
 from ..utils import ApiClient
@@ -16,6 +16,7 @@ class FilesMixin:
     """
 
     api_client: ApiClient
+    generate_parameters: Callable
 
     def get_files_list(
         self,
@@ -26,20 +27,17 @@ class FilesMixin:
         """
         Find out more: https://docs.directus.io/api/files.html#list-the-files
 
-        If single, only return first corresponding result from list
 
         Returns
         -------
             (List of File, Metadata)
         """
-
         response_data, response_meta = self.api_client.make_request(
             method="GET",
             path="files",
-            params={
-                **vars(pagination or ListPagination()),
-                **vars(parameters or ListParameters()),
-            },
+            params=self.generate_parameters(
+                parameters=parameters, pagination=pagination
+            ),
             meta=meta or [],
         )
 
@@ -58,7 +56,6 @@ class FilesMixin:
         -------
             (File, Metadata)
         """
-
         return self.api_client.make_request(
             method="GET",
             path="/".join(["files", str(file_id)]),
@@ -84,7 +81,6 @@ class FilesMixin:
         -------
             (File, Metadata)
         """
-
         params = {"data": data}
 
         if filename_download:

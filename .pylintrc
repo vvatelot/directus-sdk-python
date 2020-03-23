@@ -207,7 +207,7 @@ ignore-docstrings=yes
 ignore-imports=no
 
 # Minimum lines number of a similarity.
-min-similarity-lines=4
+min-similarity-lines=10
 
 
 [TYPECHECK]
@@ -483,7 +483,7 @@ single-line-if-stmt=no
 [DESIGN]
 
 # Maximum number of arguments for function / method.
-max-args=15
+max-args=10
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes=7

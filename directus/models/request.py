@@ -34,8 +34,9 @@ class ListPagination:
     def __init__(
         self, page: Optional[int] = None, limit: int = 100, offset: int = 0
     ) -> None:
+        self.limit = limit
+
         if page:
             self.page = page
         else:
-            self.limit = limit
             self.offset = offset
