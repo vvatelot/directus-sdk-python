@@ -194,16 +194,6 @@ file, metadata = client.get_file(file_id=1)
 file, metadata = client.create_file(data="https://picsum.photos/200/300")
 ```
 
-### Mail
-
-#### Send an email
-
-> **Params:** send_to (required str), subject (required str), body (required str), body_type (str), data (dict)
-
-```python
-client.send_email(send_to="sendto@example.com", subject="Hello world!", body="This is my message to you")
-```
-
 ## Development
 
 Simply install the project from scratch with the following command:
