@@ -81,7 +81,9 @@ created_collection, metadata = client.create_collection(collection=new_collectio
 > **Params:** collection (required str), data (required dict), meta (List of str)
 
 ```python
-updated_collection, metadata = client.update_collection(collection="sports", data={"note":"Hello World!"})
+updated_collection, metadata = client.update_collection(
+    collection="sports", data={"note": "Hello World!"}
+)
 ```
 
 #### Delete a collection
@@ -96,7 +98,7 @@ collection_is_deleted = client.delete_collection(collection="sports")
 
 #### Get a list of items in a collection
 
-> **Params:** collection (required str), parameters ([ListParameters](#-ListParameters)), pagination ([ListPagination](#-ListPagination)), meta (List of str)
+> **Params:** collection (required str), parameters ([ListParameters](#listparameters)), pagination ([ListPagination](#listpagination)), meta (List of str)
 >
 > By default, if a page is specified, offset will be ignored
 
@@ -106,7 +108,7 @@ sports, metadata = client.get_items_list(collection="sports")
 
 #### Get a list of all items in a collection (run through pagination)
 
-> **Params:** collection (required str), parameters ([ListParameters](#-ListParameters)), pagination ([ListPagination](#-ListPagination)), meta (List of str)
+> **Params:** collection (required str), parameters ([ListParameters](#listparameters)), pagination ([ListPagination](#listpagination)), meta (List of str)
 
 ```python
 all_sports, metadata = client.get_all_items_list(collection="sports")
@@ -133,7 +135,9 @@ created_sport, metadata = client.create_item(collection="sports", item_data=item
 > **Params:** collection (required str), item_id (required int), item_data (required dict), fields (List of str), meta (List of str)
 
 ```python
-updated_sport, metadata = client.update_item(collection="sports", item_id=1, item_data=item_data_to_update)
+updated_sport, metadata = client.update_item(
+    collection="sports", item_id=1, item_data=item_data_to_update
+)
 ```
 
 #### Delete an item
@@ -146,7 +150,7 @@ sport_deleted = client.delete_item(collection="sports", item_id=1)
 
 #### List item revisions
 
-> **Params:** collection (required str), item_id (required int), parameters ([ListParameters](#-ListParameters)), pagination ([ListPagination](#-ListPagination)), meta (List of str)
+> **Params:** collection (required str), item_id (required int), parameters ([ListParameters](#listparameters)), pagination ([ListPagination](#listpagination)), meta (List of str)
 >
 > By default, if a page is specified, offset will be ignored
 
@@ -167,14 +171,16 @@ sport_revision = client.get_item_revision(collection="sports", item_id=1, offset
 > **Params:** collection (required str), item_id (required int), revision_id (int), fields (List of str), meta (List of str)
 
 ```python
-reverted_sport = client.revert_item_revision(collection="sports", item_id=1, revision_id=2)
+reverted_sport = client.revert_item_revision(
+    collection="sports", item_id=1, revision_id=2
+)
 ```
 
 ### Files
 
 #### Get a list of files
 
-> **Params:** fields (List of str), parameters ([ListParameters](#-ListParameters)), pagination ([ListPagination](#-ListPagination)), meta (List of str)
+> **Params:** fields (List of str), parameters ([ListParameters](#listparameters)), pagination ([ListPagination](#listpagination)), meta (List of str)
 
 ```python
 files, metadata = client.get_files_list()
@@ -213,7 +219,9 @@ parameters = ListParameters(
     list_filter="filter[contributors][all]=1,2,3"   # https://docs.directus.io/api/query/filter.html
 )
 
-football_sports, meta = items.get_all_items_list(collection="sports", parameters=parameters)
+football_sports, meta = items.get_all_items_list(
+    collection="sports", parameters=parameters
+)
 ```
 
 > You can also use `single=True` parameter so that only the first element will be returned (see [single](https://docs.directus.io/api/query/single.html))
