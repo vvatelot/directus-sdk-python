@@ -31,6 +31,5 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - run: pip install poetry
       - run: make install
       - run: make test

@@ -8,6 +8,7 @@ MYPY := poetry run mypy
 PYTEST := poetry run pytest -v
 
 install:
+	@pip install poetry
 	@poetry install
 
 lint:
