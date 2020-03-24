@@ -31,5 +31,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Setup environement
+        run: |
+          pip install docker-compose
+          docker-compose up -d
+
       - run: make install
+      - run: sleep 15 # Wait 15 seconds for the Directus API to be ready
       - run: make test

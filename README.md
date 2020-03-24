@@ -219,7 +219,15 @@ make lint
 make format
 ```
 
-Run tests with the following command:
+In order to run tests, we rely on [docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/) for setting up a Directus API.
+
+Start the docker environment:
+
+```sh
+docker-compose up -d
+```
+
+Usually wait few seconds before the docker environment is ready to accept requests and you can run tests:
 
 ```sh
 make test
