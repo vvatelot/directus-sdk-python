@@ -1,5 +1,7 @@
 .PHONY: install lint format test
 
+SHELL := bash
+
 BLACK := poetry run black
 PYLINT := poetry run pylint
 MYPY := poetry run mypy
