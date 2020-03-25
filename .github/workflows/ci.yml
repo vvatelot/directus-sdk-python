@@ -2,6 +2,9 @@ name: CI
 
 on: push
 
+env:
+  PIP_CACHE_DIR: ~/.cache/pip
+
 jobs:
   # lint:
   #   name: Lint
@@ -26,6 +29,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/cache@v1
+        with:
+          path: $PIP_CACHE_DIR
+          key: ${{ runner.os }}-pip-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - uses: actions/setup-python@v1
         with:
