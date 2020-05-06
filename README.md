@@ -94,7 +94,7 @@ collection_is_deleted = client.delete_collection(collection="sports")
 
 #### Get a list of items in a collection
 
-> **Params:** collection (required str), fields (List of str), page (int), limit (int), offset (int), sort (List of str), single (bool), status (str), q (str), meta (List of str)
+> **Params:** collection (required str), fields (List of str), page (int), limit (int), offset (int), sort (List of str), single (bool), [filter](#filter-parameter) (dict), status (str), q (str), meta (List of str)
 >
 > By default, if a page is specified, offset will be ignored
 
@@ -104,7 +104,7 @@ sports, metadata = client.get_items_list(collection="sports")
 
 #### Get a list of all items in a collection (run through pagination)
 
-> **Params:** collection (required str), fields (List of str), sort (List of str), status (str), q (str), meta (List of str)
+> **Params:** collection (required str), fields (List of str), sort (List of str), [filter](#filter-parameter) (dict), status (str), q (str), meta (List of str)
 
 ```python
 all_sports, metadata = client.get_all_items_list(collection="sports")
@@ -144,7 +144,7 @@ sport_deleted = client.delete_item(collection="sports", id=1)
 
 #### List item revisions
 
-> **Params:** collection (required str), id (required int), fields (List of str), limit (int), offset (int), page (int), sort (List of str), single (bool), filter (dict), q (str), meta (List of str)
+> **Params:** collection (required str), id (required int), fields (List of str), limit (int), offset (int), page (int), sort (List of str), single (bool), [filter](#filter-parameter) (dict), q (str), meta (List of str)
 >
 > By default, if a page is specified, offset will be ignored
 
@@ -172,7 +172,7 @@ reverted_sport = client.revert_item_revision(collection="sports", id=1, revision
 
 #### Get a list of files
 
-> **Params:** fields (List of str), page (int), limit (int), offset (int), sort (List of str), filter (dict), single (bool), status (str), q (str), meta (List of str)
+> **Params:** fields (List of str), page (int), limit (int), offset (int), sort (List of str), [filter](#filter-parameter) (dict), single (bool), status (str), q (str), meta (List of str)
 
 ```python
 files, metadata = client.get_files_list()
@@ -192,6 +192,16 @@ file, metadata = client.get_file(id=1)
 
 ```python
 file, metadata = client.create_file(data="https://picsum.photos/200/300")
+```
+
+### Filter parameter
+
+According to the [Directus API documentation](https://docs.directus.io/api/query/filter.html), you can use a filter to search items. Here is an example with the python SDK:
+
+```python
+filter = {"filter[author.email][rlike]": "%@directus.io"}
+
+users, metadata = client.get_items_list(collection="users", filter=filter)
 ```
 
 ### Mail
